@@ -10,8 +10,75 @@ An intelligent, multi-modal policy compliance agent designed to audit YouTube vi
 
 The system is designed with a clear separation of concerns, orchestrating multiple powerful external services using **LangGraph**:
 
-![Architecture Diagram](docs/architecture.png)
-_(Note: Please ensure your architecture diagram is saved as `docs/architecture.png`)_
+```mermaid
+flowchart TD
+    %% Define Styles
+    classDef entryPoints fill:#f9f9f9,stroke:#2ecc71,stroke-width:2px,stroke-dasharray: 5 5;
+    classDef orchestration fill:#f9f9f9,stroke:#2ecc71,stroke-width:2px,stroke-dasharray: 5 5;
+    classDef azureInfra fill:#f9f9f9,stroke:#2ecc71,stroke-width:2px,stroke-dasharray: 5 5;
+    classDef extIntel fill:#f9f9f9,stroke:#2ecc71,stroke-width:2px,stroke-dasharray: 5 5;
+    
+    classDef redBox fill:#ffffff,stroke:#e74c3c,stroke-width:1px,stroke-dasharray: 5 5,color:#e74c3c;
+    
+    %% Groups
+    subgraph Entry Points
+        A[main.py <br> CLI Trigger]:::redBox
+        B[FAST API Server <br> Backend]:::redBox
+    end
+
+    subgraph Orchestration
+        C[RAG Workflow <br> LangGraph]:::redBox
+        D[Video Processor <br> yt-dlp and Indexer]:::redBox
+        E[Retrieval Engine]:::redBox
+        F[Compliance Auditor]:::redBox
+    end
+
+    subgraph Azure Infra + Managed
+        G[Azure Blob Storage <br> for temp video]:::redBox
+        H[Azure Video Index <br> OCR + Transcript]:::redBox
+        I[Azure AI Search <br> Vector DB]:::redBox
+    end
+
+    subgraph External Intelligence + Observability
+        J[Youtube <br> Video Source]:::redBox
+        K[Azure Open AI <br> LLM + Embedding model]:::redBox
+        L[Azure Application Insights <br> Logs and Metrics]:::redBox
+        M[Langsmith Tracing <br> and Debugging]:::redBox
+    end
+
+    %% Connections - Entry Points to Orchestration
+    A -- Trigger Audit --> B
+    B --> C
+    
+    %% Connections - Orchestration Internal
+    C --> D
+    C --> E
+    C --> F
+    
+    %% Connections - Orchestration to Infra
+    D -- Temp File --> G
+    D -- Process --> H
+    H -- Insights --> D
+    E -- Query --> I
+    
+    %% Connections to External Intel
+    D --> J
+    E -- Embeddings --> K
+    F --> K
+    
+    %% Observability Connections (from Orchestration to Logs)
+    C -.-> M
+    D -.-> L
+    E -.-> L
+    F -.-> L
+    B -.-> L
+
+    %% Apply Subgraph Styles
+    class EntryPoints entryPoints;
+    class Orchestration orchestration;
+    class AzureInfra azureInfra;
+    class ExtIntel extIntel;
+```
 
 ### 1. Entry Points
 
