@@ -20,6 +20,10 @@ from pprint import pprint  # Pretty-prints data structures (unused here, but ava
 from dotenv import load_dotenv
 load_dotenv(override=True)  # override=True means .env values take priority over system variables
 
+# Fail early with a clear message if the audit pipeline is not configured.
+from backend.src.config import validate_audit_environment
+validate_audit_environment()
+
 # Import the main workflow graph (the "brain" of your child safety system)
 from backend.src.graph.workflow import app
 

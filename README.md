@@ -62,6 +62,7 @@ AZURE_OPENAI_API_KEY="..."
 AZURE_OPENAI_ENDPOINT="..."
 AZURE_OPENAI_API_VERSION="..."
 AZURE_OPENAI_CHAT_DEPLOYMENT="..."
+AZURE_OPENAI_EMBEDDING_DEPLOYMENT="text-embedding-3-small"
 
 # Azure AI Search
 AZURE_SEARCH_ENDPOINT="..."
@@ -69,9 +70,11 @@ AZURE_SEARCH_API_KEY="..."
 AZURE_SEARCH_INDEX_NAME="child-safety-rules"
 
 # Azure Video Indexer
-VI_ACCOUNT_ID="..."
-VI_LOCATION="..."
-VI_SUBSCRIPTION_KEY="..."
+AZURE_VI_ACCOUNT_ID="..."
+AZURE_VI_LOCATION="..."
+AZURE_SUBSCRIPTION_ID="..."
+AZURE_RESOURCE_GROUP="..."
+AZURE_VI_NAME="..."
 
 # Observability
 LANGCHAIN_API_KEY="..."
@@ -84,10 +87,10 @@ APPLICATIONINSIGHTS_CONNECTION_STRING="..."
 This project uses `uv` for lightning-fast dependency management:
 
 ```bash
-uv pip install -r requirements.txt
+uv sync
 ```
 
-_(Alternatively, standard `pip install` works as well)_
+_This repo is managed from `pyproject.toml` and `uv.lock`, so there is no `requirements.txt` file._
 
 ### 4. Knowledge Base Ingestion
 
