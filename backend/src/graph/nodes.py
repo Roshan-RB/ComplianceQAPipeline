@@ -1,7 +1,5 @@
-import json
 import os
 import logging
-import re  # <--- Added Regex for cleaning
 from typing import Dict, Any, List
 
 from langchain_openai import AzureChatOpenAI, AzureOpenAIEmbeddings
@@ -11,6 +9,7 @@ from langchain_core.messages import SystemMessage, HumanMessage
 
 # Import the State schema .
 from backend.src.graph.state import VideoAuditState, ComplianceIssue
+from backend.src.graph.audit_response import parse_audit_response
 
 # Import the Service
 from backend.src.services.video_indexer import VideoIndexerService
@@ -199,19 +198,13 @@ def audit_content_node(state: VideoAuditState) -> Dict[str, Any]:
                     HumanMessage(content=user_message)
                 ])
             
-            # --- FIX: Clean Markdown if present (```json ... ```) ---
-            content = response.content
-            if "```" in content:
-                # Regex to find JSON inside code blocks
-                content = re.search(r"```(?:json)?(.*?)```", content, re.DOTALL).group(1)
-                
-            audit_data = json.loads(content.strip())
+            audit_data = parse_audit_response(response.content)
             
-            span.set_attribute("audit.status", audit_data.get("status", "UNKNOWN"))
+            span.set_attribute("audit.status", audit_data.status)
             return {
-                "compliance_results": audit_data.get("compliance_results", []),
-                "final_status": audit_data.get("status", "FAIL"),
-                "final_report": audit_data.get("final_report", "No report generated."),
+                "compliance_results": [issue.model_dump() for issue in audit_data.compliance_results],
+                "final_status": audit_data.status,
+                "final_report": audit_data.final_report,
                 "retrieved_policies": retrieved_policies
             }
 
