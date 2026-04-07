@@ -1,14 +1,14 @@
 import operator
-from typing import TypedDict, Annotated, List, Dict, Any, Optional
+from typing import TypedDict, Annotated, List, Dict, Any, Optional, NotRequired
 
 
 #define the schema for compliance result
 
 class ComplianceIssue(TypedDict):
-    catergory : str
+    category : str
     description : str #specific detail of violation
     severity : str #CRITICAL | WARNING
-    timestamp : Optional[str]
+    timestamp : NotRequired[Optional[str]]
     
 class VideoAuditState(TypedDict):
     '''
@@ -25,7 +25,7 @@ class VideoAuditState(TypedDict):
     local_file_path : Optional[str]
     video_metadata : Dict[str, Any] #{"duration" : 15, "resolution" : "1080p"}
     transcript : Optional[str] #fully extracted speech-to-text
-    oct_text : List[str]
+    ocr_text : List[str]
 
     #analysis output
     #stores the list of all violations found by AI
@@ -35,7 +35,7 @@ class VideoAuditState(TypedDict):
     retrieved_policies : List[str]
 
     #final deliverables
-    final_status : str #pass | fail
+    final_status : str #PASS | FAIL
     final_report : str #markdown format
     
 
