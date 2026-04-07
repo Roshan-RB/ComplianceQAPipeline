@@ -48,6 +48,7 @@ def index_video_node(state: VideoAuditState) -> Dict[str, Any]:
                 if "youtube.com" in video_url or "youtu.be" in video_url:
                     with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as temp_file:
                         local_path = temp_file.name
+                    os.remove(local_path)
                     local_path = vi_service.download_youtube_video(video_url, output_path=local_path)
                 else:
                     raise Exception("Please provide a valid YouTube URL for this test.")
