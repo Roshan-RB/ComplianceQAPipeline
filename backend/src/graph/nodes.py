@@ -1,5 +1,6 @@
 import os
 import logging
+import tempfile
 from typing import Dict, Any, List
 
 from langchain_openai import AzureChatOpenAI, AzureOpenAIEmbeddings
@@ -33,8 +34,7 @@ def index_video_node(state: VideoAuditState) -> Dict[str, Any]:
     video_id_input = state.get("video_id", "vid_demo")
     
     logger.info(f"--- [Node: Indexer] Processing: {video_url} ---")
-    
-    local_filename = "temp_audit_video.mp4"
+    local_path = None
     
     with tracer.start_as_current_span("IndexVideoNode") as span:
         span.set_attribute("video.url", video_url)
@@ -46,7 +46,9 @@ def index_video_node(state: VideoAuditState) -> Dict[str, Any]:
             # 1. DOWNLOAD
             with tracer.start_as_current_span("YouTubeDownload"):
                 if "youtube.com" in video_url or "youtu.be" in video_url:
-                    local_path = vi_service.download_youtube_video(video_url, output_path=local_filename)
+                    with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as temp_file:
+                        local_path = temp_file.name
+                    local_path = vi_service.download_youtube_video(video_url, output_path=local_path)
                 else:
                     raise Exception("Please provide a valid YouTube URL for this test.")
 
@@ -54,16 +56,12 @@ def index_video_node(state: VideoAuditState) -> Dict[str, Any]:
             with tracer.start_as_current_span("AzureVideoIndexerUpload"):
                 azure_video_id = vi_service.upload_video(local_path, video_name=video_id_input)
                 logger.info(f"Upload Success. Azure ID: {azure_video_id}")
-            
-            # 3. CLEANUP
-            if os.path.exists(local_path):
-                os.remove(local_path)
 
-            # 4. WAIT
+            # 3. WAIT
             with tracer.start_as_current_span("AzureVideoIndexerProcessing"):
                 raw_insights = vi_service.wait_for_processing(azure_video_id)
             
-            # 5. EXTRACT
+            # 4. EXTRACT
             with tracer.start_as_current_span("ExtractInsights"):
                 clean_data = vi_service.extract_data(raw_insights)
             
@@ -81,6 +79,12 @@ def index_video_node(state: VideoAuditState) -> Dict[str, Any]:
                 "transcript": "", 
                 "ocr_text": []
             }
+        finally:
+            if local_path and os.path.exists(local_path):
+                try:
+                    os.remove(local_path)
+                except OSError as exc:
+                    logger.warning(f"Failed to delete temporary video file {local_path}: {exc}")
 
 # --- NODE 2: THE CHILD SAFETY AUDITOR ---
 def audit_content_node(state: VideoAuditState) -> Dict[str, Any]:
