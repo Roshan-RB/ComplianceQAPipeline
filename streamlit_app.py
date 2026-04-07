@@ -152,7 +152,7 @@ with col_input:
         label_visibility="collapsed",
     )
 with col_btn:
-    run_clicked = st.button("🚀 Run Audit", type="primary", width=True)
+    run_clicked = st.button("🚀 Run Audit", type="primary")
 
 # ────────────────────────── Video Preview ──────────────────────────
 if video_url.strip():
@@ -166,7 +166,7 @@ if video_url.strip():
             oembed = oembed_resp.json()
             prev_col1, prev_col2 = st.columns([1, 3])
             with prev_col1:
-                st.image(oembed.get("thumbnail_url"), width=True)
+                st.image(oembed.get("thumbnail_url"))
             with prev_col2:
                 st.markdown(f"**{oembed.get('title', 'Unknown Title')}**")
                 st.caption(f"By {oembed.get('author_name', 'Unknown')}")
